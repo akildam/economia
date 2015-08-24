@@ -5,6 +5,7 @@ import com.economia.bean.Department;
 import com.economia.dao.DepartmentDao;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoup.Jsoup;
@@ -23,10 +24,20 @@ public class WebScraping {
      */
     public static void main(String[] args){
         WebScraping ws = new WebScraping();
-        ws.departments();
+        
+        List<Department> departments = ws.geDepartments();
+        DepartmentDao departmentDao = new DepartmentDao();
+        
+        for(Department dept : departments){
+            departmentDao.insert(dept);
+        }
     }
     
-    public ArrayList departments(){
+    /**
+     * Get departments from "Disque Economia" site.
+     * @return A list of departments.
+     */
+    public ArrayList<Department> geDepartments(){
         ArrayList<Department> departments = new ArrayList();
         try {
             Document doc = Jsoup.connect("http://disqueeconomia.curitiba.pr.gov.br/").get();
@@ -41,12 +52,8 @@ public class WebScraping {
                     dept.setId(arrHref[1]);
                     dept.setName(span.text());
                     departments.add(dept);
-                    
-                    DepartmentDao departmentDao = new DepartmentDao();
-                    departmentDao.insert(departments);
                 }
             }
-            
         } catch (IOException ex) {
             Logger.getLogger(WebScraping.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -54,10 +61,11 @@ public class WebScraping {
     }
     
     /**
-     * Get the product data.
-     * @param dept 
+     * Get all products from a given department. The data is collected from "Disque Economia" site.
+     * @param dept A department object.
+     * @return A list of products.
      */
-    public void productsByDepartment(Department dept){
+    public ArrayList<Product> getProductsByDepartment(Department dept){
         ArrayList<Product> products = new ArrayList();
         try {
             Document doc = Jsoup.connect("http://disqueeconomia.curitiba.pr.gov.br/default.asp?GrPCod=" + dept.getId()).get();
@@ -80,6 +88,7 @@ public class WebScraping {
         } catch (IOException ex) {
             Logger.getLogger(WebScraping.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return products;
     }
     
 }
