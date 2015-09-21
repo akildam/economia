@@ -3,6 +3,7 @@ package com.economia.webscraping;
 import com.economia.bean.Product;
 import com.economia.bean.Department;
 import com.economia.dao.DepartmentDao;
+import com.economia.dao.ProductDao;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
- *
- * @author Renato
+ * Main class.
  */
 public class WebScraping {
     
@@ -27,9 +27,18 @@ public class WebScraping {
         
         List<Department> departments = ws.geDepartments();
         DepartmentDao departmentDao = new DepartmentDao();
+        ProductDao productDao = new ProductDao();
+        
+        for(int i = 0; i < departments.size(); i++){
+            Integer result = departmentDao.insert(departments.get(i));
+            departments.get(i).setId(result); // @TODO fix: when nothing is inserted on database, ID will be 0 and products will try to add a product.dept_id = 0;
+        }
         
         for(Department dept : departments){
-            departmentDao.insert(dept);
+            List<Product> products = ws.getProductsByDepartment(dept);
+            for(Product product : products){
+                productDao.insert(product);
+            }
         }
     }
     
@@ -49,7 +58,7 @@ public class WebScraping {
                 if(arrHref.length > 1){
                     Element span = a.getElementsByTag("span").first();
                     Department dept = new Department();
-                    dept.setId(arrHref[1]);
+                    dept.setExternalId(arrHref[1]);
                     dept.setName(span.text());
                     departments.add(dept);
                 }
@@ -68,7 +77,9 @@ public class WebScraping {
     public ArrayList<Product> getProductsByDepartment(Department dept){
         ArrayList<Product> products = new ArrayList();
         try {
-            Document doc = Jsoup.connect("http://disqueeconomia.curitiba.pr.gov.br/default.asp?GrPCod=" + dept.getId()).get();
+            String url = "http://disqueeconomia.curitiba.pr.gov.br/default.asp?GrPCod=" + dept.getExternalId();
+            
+            Document doc = Jsoup.connect(url).get();
             Element content = doc.getElementsByClass("tabela").first();
             Elements trList = content.getElementsByTag("tr");
 
@@ -78,11 +89,12 @@ public class WebScraping {
                     continue;
                 }
                 Product product = new Product();
-                product.setId(tdList.get(0).child(0).val());
+                product.setExternalId(tdList.get(0).child(0).val());
                 product.setName(tdList.get(0).text().trim());
                 product.setQuantity(Integer.parseInt(tdList.get(1).text().trim()));
                 product.setMeasureUnity(tdList.get(2).text().trim());
                 product.setDeptId(dept.getId());
+                
                 products.add(product);
             }
         } catch (IOException ex) {

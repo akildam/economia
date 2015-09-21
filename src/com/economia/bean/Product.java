@@ -1,22 +1,30 @@
 package com.economia.bean;
 
 /**
- *
- * @author Renato
+ * Product entity.
  */
 public class Product {
     private String id;
+    private String externalId;
     private String name;
     private Integer quantity; 
     private String measureUnity;
-    private String deptId;
-    
+    private Integer deptId;
+
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     public String getName() {
@@ -43,11 +51,16 @@ public class Product {
         this.measureUnity = measureUnity;
     }
 
-    public String getDeptId() {
+    public Integer getDeptId() {
         return deptId;
     }
 
-    public void setDeptId(String deptId) {
+    public void setDeptId(Integer deptId) {
         this.deptId = deptId;
+    }
+
+    @Override
+    public String toString() {
+        return getExternalId()+" : "+getName()+" : "+getDeptId();
     }
 }

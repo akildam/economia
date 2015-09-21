@@ -4,8 +4,10 @@ import com.economia.bean.Department;
 import com.economia.connection.ConnectionFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,19 +27,25 @@ public class DepartmentDao {
     }
     
     /**
-     * Inserts a department.
-     * @param Department department 
+     * Inserts a department. If this department is already registered, nothing will be recorded in the database.
+     * @param department
+     * @return dept_id
      */
-    public void insert(Department department){
+    public int insert(Department department){
         PreparedStatement preparedStatement = null;
+        int result = 0;
         try {
-            String sql = "INSERT INTO department(dept_id_external, dept_name) VALUES(?,?)";
+            String sql = "INSERT INTO department(dept_external_id, dept_name) VALUES(?,?)";
             
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1,department.getId());
+            preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            preparedStatement.setString(1,department.getExternalId());
             preparedStatement.setString(2,department.getName());
-            preparedStatement.execute();
-
+            preparedStatement.executeUpdate();
+            
+            ResultSet rs = preparedStatement.getGeneratedKeys();
+            if(rs.next()){
+                result = rs.getInt(1);
+            }
         } catch (SQLIntegrityConstraintViolationException e) {
             // Nothing is done when trying to insert an existent department.
         } catch (SQLException e) {
@@ -50,7 +58,17 @@ public class DepartmentDao {
                     Logger.getLogger(DepartmentDao.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            /*
+            // @TODO Fix this! Need to use the same connection.
+            if (connection != null) { 
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(DepartmentDao.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }*/
         }
+        return result;
     }
     
     /**
@@ -61,12 +79,12 @@ public class DepartmentDao {
         PreparedStatement preparedStatement = null;
         try {
             connection.setAutoCommit(false);
-            String sql = "INSERT INTO department(dept_id_external, dept_name) VALUES(?,?)";
+            String sql = "INSERT INTO department(dept_external_id, dept_name) VALUES(?,?)";
             
             preparedStatement = connection.prepareStatement(sql);
             
             for(Department dept : departments){
-                preparedStatement.setString(1,dept.getId());
+                preparedStatement.setInt(1,dept.getId());
                 preparedStatement.setString(2,dept.getName());
                 preparedStatement.addBatch();
             }

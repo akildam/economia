@@ -1,19 +1,27 @@
 package com.economia.bean;
 
 /**
- *
- * 
+ * Department entity.
  */
 public class Department {
-    private String id;
+    private Integer id;
+    private String externalId;
     private String name;
-
-    public String getId() {
+    
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+    
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
     public String getName() {
@@ -22,5 +30,10 @@ public class Department {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return getId()+" : "+getExternalId() + " : " + getName(); //To change body of generated methods, choose Tools | Templates.
     }
 }

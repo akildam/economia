@@ -7,7 +7,6 @@ import java.util.Properties;
 
 /**
  * Connection factory.
- * @author Renato
  */
 public class ConnectionFactory {
     public Connection getConnection() {
@@ -15,7 +14,7 @@ public class ConnectionFactory {
             Properties properties = new Properties();
             properties.setProperty("user", "db2admin");
             properties.setProperty("password", "db2admin");
-            properties.setProperty("currentSchema", "economia");
+            properties.setProperty("currentSchema", "ECONOMIA");
             return DriverManager.getConnection("jdbc:db2://localhost:50000/ECONOMIA", properties);
         } catch (SQLException e) {
             throw new RuntimeException(e);
